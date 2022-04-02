@@ -41,7 +41,7 @@ class SPADEGenerator(BaseNetwork):
         return sw, sh
 
     def forward(self, input, warp_out=None):
-        seg = torch.cat((F.interpolate(warp_out[0], size=(512, 512)), F.interpolate(warp_out[1], size=(512, 512)), F.interpolate(warp_out[2], size=(512, 512)), warp_out[3], input), dim=1)
+        seg = torch.cat((F.interpolate(warp_out[0], size=(self.opt.crop_size, self.opt.crop_size)), F.interpolate(warp_out[1], size=(self.opt.crop_size, self.opt.crop_size)), F.interpolate(warp_out[2], size=(self.opt.crop_size, self.opt.crop_size)), warp_out[3], input), dim=1)
         x = F.interpolate(seg, size=(self.sh, self.sw))
         x = self.fc(x)
         x = self.head_0(x, seg)

@@ -47,8 +47,8 @@ class Pix2pixDataset(BaseDataset):
         label = Image.open(path)
         params1 = get_params(self.opt, label.size)
         transform_label = get_transform(self.opt, params1, method=Image.NEAREST, normalize=False)
-        label_tensor = transform_label(label) * 255.0
-        label_tensor[label_tensor == 255] = self.opt.label_nc
+        label_tensor = transform_label(label)
+        # label_tensor[label_tensor == 255] = self.opt.label_nc
         # 'unknown' is opt.label_nc
         return label_tensor, params1
 
@@ -61,13 +61,14 @@ class Pix2pixDataset(BaseDataset):
         image_path = self.image_paths[index]
         image_path = os.path.join(self.opt.dataroot, image_path)
         image = Image.open(image_path).convert('RGB')
+        # image = Image.open(image_path)
         transform_image = get_transform(self.opt, params1)
         image_tensor = transform_image(image)
         ref_tensor = 0
         label_ref_tensor = 0
         random_p = random.random()
         if random_p < self.real_reference_probability or self.opt.phase == 'test':
-            key = image_path.split('deepfashionHD/')[-1]
+            key = image_path.split(self.opt.dataroot + os.sep)[-1]
             val = self.ref_dict[key]
             if random_p < self.hard_reference_probability:
                 #hard reference
@@ -80,6 +81,7 @@ class Pix2pixDataset(BaseDataset):
             else:
                 path_ref = os.path.dirname(image_path).replace(self.train_test_folder[1], self.train_test_folder[0]) + '/' + path_ref
             image_ref = Image.open(path_ref).convert('RGB')
+            # image_ref = Image.open(path_ref)
             if self.opt.dataset_mode != 'deepfashionHD':
                 path_ref_label = path_ref.replace('.jpg', '.png')
                 path_ref_label = self.imgpath_to_labelpath(path_ref_label)
@@ -91,17 +93,18 @@ class Pix2pixDataset(BaseDataset):
             self_ref_flag = 0.0
         else:
             pair = False
-            if self.opt.dataset_mode == 'deepfashionHD' and self.opt.video_like:
-                key = image_path.replace('\\', '/').split('deepfashionHD/')[-1]
+            if self.opt.video_like:
+                key = image_path.replace('\\', '/').split(self.opt.dataroot + os.sep)[-1]
                 val = self.ref_dict[key]
                 ref_name = val[0]
                 key_name = key
                 path_ref = os.path.join(self.opt.dataroot, ref_name)
                 image_ref = Image.open(path_ref).convert('RGB')
+                # image_ref = Image.open(path_ref)
                 label_ref_path = self.imgpath_to_labelpath(path_ref)
                 label_ref_tensor, params = self.get_label_tensor(label_ref_path)
                 transform_image = get_transform(self.opt, params)
-                ref_tensor = transform_image(image_ref) 
+                ref_tensor = transform_image(image_ref)
                 pair = True
             if not pair:
                 label_ref_tensor, params = self.get_label_tensor(label_path)

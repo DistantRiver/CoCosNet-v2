@@ -110,12 +110,14 @@ class NoVGGHPMCorrespondence(BaseNetwork):
         self.theta_2 = nn.Conv2d(in_channels=feature_channel*2, out_channels=feature_channel, kernel_size=1, stride=1, padding=0)
         self.theta_3 = nn.Conv2d(in_channels=feature_channel, out_channels=feature_channel, kernel_size=1, stride=1, padding=0)
         self.patch_match = PatchMatchGRU(opt)
+        
+        self.coef = self.opt.crop_size // 8
 
     """512x512"""
     def multi_scale_patch_match(self, f1, f2, ref, hierarchical_scale, pre=None, real_img=None):
         if hierarchical_scale == 0:
             y_cycle = None
-            scale = 64
+            scale = self.coef
             batch_size, channel, feature_height, feature_width = f1.size()
             ref = F.avg_pool2d(ref, 8, stride=8)
             ref = ref.view(batch_size, 3, scale * scale)
@@ -131,7 +133,7 @@ class NoVGGHPMCorrespondence(BaseNetwork):
             y = y.permute(0, 2, 1).view(batch_size, 3, scale, scale)
             return mat, y, y_cycle
         if hierarchical_scale == 1:
-            scale = 128
+            scale = self.coef * 2
             with torch.no_grad():
                 batch_size, channel, feature_height, feature_width = f1.size()
                 topk_num = 1
@@ -154,7 +156,7 @@ class NoVGGHPMCorrespondence(BaseNetwork):
             y = y.view(batch_size, 3, scale, scale)
             return mat, y
         if hierarchical_scale == 2:
-            scale = 256
+            scale = self.coef * 4
             with torch.no_grad():
                 batch_size, channel, feature_height, feature_width = f1.size()
                 topk_num = 1
@@ -177,7 +179,7 @@ class NoVGGHPMCorrespondence(BaseNetwork):
             y = y.view(batch_size, 3, scale, scale)
             return mat, y
         if hierarchical_scale == 3:
-            scale = 512
+            scale = self.coef * 8
             with torch.no_grad():
                 batch_size, channel, feature_height, feature_width = f1.size()
                 topk_num = 1

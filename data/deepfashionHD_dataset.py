@@ -19,8 +19,8 @@ class DeepFashionHDDataset(Pix2pixDataset):
         parser = Pix2pixDataset.modify_commandline_options(parser, is_train)
         parser.set_defaults(preprocess_mode='resize_and_crop')
         parser.set_defaults(no_pairing_check=True)
-        parser.set_defaults(load_size=550)
-        parser.set_defaults(crop_size=512)
+        parser.set_defaults(load_size=275)
+        parser.set_defaults(crop_size=256)
         parser.set_defaults(label_nc=20)
         parser.set_defaults(contain_dontcare_label=False)
         parser.set_defaults(cache_filelist_read=False)
@@ -30,17 +30,18 @@ class DeepFashionHDDataset(Pix2pixDataset):
     def get_paths(self, opt):
         root = opt.dataroot
         if opt.phase == 'train':
-            fd = open(os.path.join('./data/train.txt'))
+            fd = open(os.path.join('./data/deepfashionHD_train.txt'))
             lines = fd.readlines()
             fd.close()
         elif opt.phase == 'test':
-            fd = open(os.path.join('./data/val.txt'))
+            fd = open(os.path.join('./data/deepfashionHD_val.txt'))
             lines = fd.readlines()
             fd.close()
         image_paths = []
         label_paths = []
         for i in range(len(lines)):
             name = lines[i].strip()
+            name = name.replace('\\', '/')
             image_paths.append(name)
             label_path = name.replace('img', 'pose').replace('.jpg', '_{}.txt')
             label_paths.append(os.path.join(label_path))

@@ -129,13 +129,34 @@ class Pix2PixModel(torch.nn.Module):
                     data[k] = data[k].cuda()
                 except:
                     continue
-        label = data['label'][:,:3,:,:].float()
-        label_ref = data['label_ref'][:,:3,:,:].float()
-        input_semantics = data['label'].float()
-        ref_semantics = data['label_ref'].float()
-        image = data['image']
-        ref = data['ref']
-        self_ref = data['self_ref']
+        if self.opt.dataset_mode == 'deepfashionHD':
+            label = data['label'][:,:3,:,:].float()
+            label_ref = data['label_ref'][:,:3,:,:].float()
+            input_semantics = data['label'].float()
+            ref_semantics = data['label_ref'].float()
+            image = data['image']
+            ref = data['ref']
+            self_ref = data['self_ref']
+        else:
+            label = data['label'].float()
+            label_ref = data['label_ref'].float()
+            input_semantics = data['label'].float()
+            ref_semantics = data['label_ref'].float()
+            image = data['image']
+            ref = data['ref']
+            self_ref = data['self_ref']
+        '''
+        if self.opt.dataset_mode != 'celebahqedge' and self.opt.dataset_mode != 'deepfashionHD':
+            label_map = data['label'].float()
+            bs, _, h, w = label_map.size()
+            nc = self.opt.label_nc + 1 if self.opt.contain_dontcare_label \
+                else self.opt.label_nc
+            input_label = self.FloatTensor(bs, nc - 3, h, w) * 255.0
+            input_semantics = torch.cat((label_map, input_label), dim=1)
+        
+            label_map = data['label_ref'].float()
+            label_ref = self.FloatTensor(bs, nc - 3, h, w) * 255.0
+            ref_semantics = torch.cat((label_map, label_ref), dim=1)'''
         return label, input_semantics, image, self_ref, ref, label_ref, ref_semantics
 
     def get_ctx_loss(self, source, target):

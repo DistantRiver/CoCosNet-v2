@@ -11,7 +11,7 @@ from util.iter_counter import IterationCounter
 from util.util import print_current_errors
 from util.util import mkdir
 from trainers.pix2pix_trainer import Pix2PixTrainer
-
+os.environ['CUDA_LAUNCH_BLOCKING'] = '1'
 
 if __name__ == '__main__':
     # parse options
@@ -51,6 +51,8 @@ if __name__ == '__main__':
 
                 if opt.dataset_mode == 'deepfashionHD':
                     label = data_i['label'][:,:3,:,:]
+                else:
+                    label = data_i['label']
 
                 show_size = opt.display_winsize
 
