@@ -19,7 +19,7 @@ for image_file in image_files:
     image_file = image_file.replace('\\', '/').strip()
     if image_file == '':
         continue
-    image_file = image_file.replace('sketch', 'video').rsplit('.', 1)[0] + '.jpg'
+    #image_file = image_file.replace('sketch', 'video').rsplit('.', 1)[0] + '.jpg'
     image_file = os.path.join(root, image_file)
     #print(image_file)
     image = io.imread(image_file)
@@ -34,7 +34,8 @@ for image_file in image_files:
         pad_width_2 = height - width - pad_width_1
         image_pad = np.pad(image, ((0,0),(pad_width_1, pad_width_2),(0,0)), constant_values=232)
     image_resize = resize(image_pad, (512, 512))
-    image_resize = (image_resize * 255).astype('uint8')
+    #image_resize = (image_resize * 255).astype('uint8')
+    image_resize = (image_pad * 255).astype('uint8')
     dst_file = os.path.dirname(image_file).replace(root, save_root)
     os.makedirs(dst_file, exist_ok=True)
     dst_file = os.path.join(dst_file, os.path.basename(image_file))

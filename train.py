@@ -49,10 +49,10 @@ if __name__ == '__main__':
             if iter_counter.needs_displaying():
                 imgs_num = data_i['label'].shape[0]
 
-                if opt.dataset_mode == 'deepfashionHD':
-                    label = data_i['label'][:,:3,:,:]
+                if opt.dataset_mode == 'sketch2video':
+                    label = data_i['label'][:,:1,:,:].repeat(1,3,1,1)
                 else:
-                    label = data_i['label']
+                    label = data_i['label'][:,:3,:,:]
 
                 show_size = opt.display_winsize
 

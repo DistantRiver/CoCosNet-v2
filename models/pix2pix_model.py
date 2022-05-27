@@ -129,7 +129,7 @@ class Pix2PixModel(torch.nn.Module):
                     data[k] = data[k].cuda()
                 except:
                     continue
-        if self.opt.dataset_mode == 'deepfashionHD':
+        if self.opt.dataset_mode == 'deepfashionHD' or 'video2sketch' in self.opt.dataset_mode:
             label = data['label'][:,:3,:,:].float()
             label_ref = data['label_ref'][:,:3,:,:].float()
             input_semantics = data['label'].float()
@@ -138,8 +138,8 @@ class Pix2PixModel(torch.nn.Module):
             ref = data['ref']
             self_ref = data['self_ref']
         else:
-            label = data['label'].float()
-            label_ref = data['label_ref'].float()
+            label = data['label'][:,:1,:,:].float()
+            label_ref = data['label_ref'][:,:1,:,:].float()
             input_semantics = data['label'].float()
             ref_semantics = data['label_ref'].float()
             image = data['image']

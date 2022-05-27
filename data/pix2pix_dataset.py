@@ -28,7 +28,8 @@ class Pix2pixDataset(BaseDataset):
         self.image_paths = image_paths
         size = len(self.label_paths)
         self.dataset_size = size
-        self.real_reference_probability = 1 if opt.phase == 'test' else opt.real_reference_probability
+        # self.real_reference_probability = 1 if opt.phase == 'test' else opt.real_reference_probability
+        self.real_reference_probability = 0 if opt.phase == 'test' else opt.real_reference_probability
         self.hard_reference_probability = 0 if opt.phase == 'test' else opt.hard_reference_probability
         self.ref_dict, self.train_test_folder = self.get_ref(opt)
         
@@ -51,15 +52,15 @@ class Pix2pixDataset(BaseDataset):
         # label_tensor[label_tensor == 255] = self.opt.label_nc
         # 'unknown' is opt.label_nc
         return label_tensor, params1
-
+    '''
     def __getitem__(self, index):
-        # label Image
+        # label Image and input image
         label_path = self.label_paths[index]
         label_path = os.path.join(self.opt.dataroot, label_path)
-        label_tensor, params1 = self.get_label_tensor(label_path)
-        # input image (real images)
         image_path = self.image_paths[index]
         image_path = os.path.join(self.opt.dataroot, image_path)
+        
+        label_tensor, params1 = self.get_label_tensor(label_path)
         image = Image.open(image_path).convert('RGB')
         # image = Image.open(image_path)
         transform_image = get_transform(self.opt, params1)
@@ -67,7 +68,8 @@ class Pix2pixDataset(BaseDataset):
         ref_tensor = 0
         label_ref_tensor = 0
         random_p = random.random()
-        if random_p < self.real_reference_probability or self.opt.phase == 'test':
+        # if random_p < self.real_reference_probability or self.opt.phase == 'test':
+        if random_p < self.real_reference_probability:
             key = image_path.split(self.opt.dataroot + os.sep)[-1]
             val = self.ref_dict[key]
             if random_p < self.hard_reference_probability:
@@ -97,7 +99,6 @@ class Pix2pixDataset(BaseDataset):
                 key = image_path.replace('\\', '/').split(self.opt.dataroot + os.sep)[-1]
                 val = self.ref_dict[key]
                 ref_name = val[0]
-                key_name = key
                 path_ref = os.path.join(self.opt.dataroot, ref_name)
                 image_ref = Image.open(path_ref).convert('RGB')
                 # image_ref = Image.open(path_ref)
@@ -111,6 +112,46 @@ class Pix2pixDataset(BaseDataset):
                 transform_image = get_transform(self.opt, params)
                 ref_tensor = transform_image(image)
             self_ref_flag = 1.0
+        input_dict = {'label': label_tensor,
+                      'image': image_tensor,
+                      'path': image_path,
+                      'self_ref': self_ref_flag,
+                      'ref': ref_tensor,
+                      'label_ref': label_ref_tensor
+                      }
+        return input_dict
+    '''
+    def __getitem__(self, index):
+        # label Image and input image
+        label_path = self.label_paths[index]
+        id1 = int(label_path.rsplit('.', 1)[0].rsplit('-', 1)[1])
+        label_path = os.path.join(self.opt.dataroot, label_path)
+        image_path = self.image_paths[index]
+        image_path = os.path.join(self.opt.dataroot, image_path)
+        
+        key = image_path.replace('\\', '/').split(self.opt.dataroot + os.sep)[-1]
+        val = self.ref_dict[key]
+        ref_name = val[0]
+        id2 = int(ref_name.rsplit('.', 1)[0].rsplit('-', 1)[1])
+        path_ref = os.path.join(self.opt.dataroot, ref_name)
+        
+        label_tensor, params1 = self.get_label_tensor(label_path, id1, id2)
+        image = Image.open(image_path).convert('RGB')
+        # image = Image.open(image_path)
+        transform_image = get_transform(self.opt, params1)
+        image_tensor = transform_image(image)
+        ref_tensor = 0
+        label_ref_tensor = 0
+        
+        image_ref = Image.open(path_ref).convert('RGB')
+        label_ref_path = self.imgpath_to_labelpath(path_ref)
+        label_ref_tensor, params = self.get_label_tensor(label_ref_path, id2, id2)
+        transform_image = get_transform(self.opt, params)
+        ref_tensor = transform_image(image_ref)
+        
+        
+        self_ref_flag = 1.0
+        
         input_dict = {'label': label_tensor,
                       'image': image_tensor,
                       'path': image_path,

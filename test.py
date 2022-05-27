@@ -37,7 +37,10 @@ if __name__ == '__main__':
             except OSError as err:
                 print(err)
         else:
-            label = data_i['label'][:,:3,:,:]
+            if opt.dataset_mode == 'sketch2video':
+                label = data_i['label'][:,:1,:,:].repeat(1,3,1,1)
+            else:
+                label = data_i['label'][:,:3,:,:]
             imgs = torch.cat((label.cpu(), data_i['ref'].cpu(), out['fake_image'].data.cpu()), 0)
             try:
                 save_name = os.path.join(save_root, '%08d.png' % i)
