@@ -139,6 +139,10 @@ class Video2SketchFlowDataset(Pix2pixDataset):
             flow_cut = -flow_data[index_2:index_1]
         flow_tensor = flow_cut.sum(0)
         
+        for i in range(len(flow_tensor)):
+            flow_tensor[i] -= flow_tensor[i].min()
+            flow_tensor[i] /= flow_tensor[i].max()
+        
         flow_tensor = torch.from_numpy(flow_tensor)
         flow_transform = transforms.Compose([transforms.Normalize((0.5), (0.5))])
         flow_tensor = flow_transform(flow_tensor)
